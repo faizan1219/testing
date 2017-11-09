@@ -71,27 +71,78 @@ router.post('/', function(req, res) {
 });
 
 router.put('/', function(req, res) {
-  var userId = req.body.userId;
-  var username = req.body.username;
-  var name = req.body.name;
-  var email = req.body.email;
-  var salary = req.body.salary;
-  var gender = req.body.gender;
-  var dob = req.body.dob;
-  var isMarried = req.body.isMarried;
+  var insertsForUpdate;
+  var userId      = req.body.userId;
+  var username    = req.body.username;
+  var name        = req.body.name;
+  var email       = req.body.email;
+  var salary      = req.body.salary;
+  var gender      = req.body.gender;
+  var dob         = req.body.dob;
+  var isMarried   = req.body.isMarried;
+  var password    = req.body.passwrod;
+  var dpURL       = req.body.dpURL;
 
-  var inserts = [username, name, email, dob, gender, salary, isMarried, userId];
-  var sql = 'UPDATE endpointUser SET username = ?,  name = ?, email = ?, dob = ?, gender = ?, salary = ?, isMarried = ? WHERE userId = ?';
-  sql = mysql.format(sql, inserts);
+  var sqlForUpdate     = 'UPDATE endpointUser SET username = ?';
+  var sqlForCurrent    = 'Select * From endpointUser WHERE userId = ?';
+  var insertForCurrent = [userId] ;
+  sqlForCurrent        = mysql.format(sqlForCurrent, insertForCurrent);
 
   poolOfConnection.getConnection(function(error, connection) {
-    if(error) throw error;
+    if (error) throw error;
     else {
-      connection.query(sql, function(err, result) {
-        connection.release();
+      connection.query(sqlForCurrent, function(err, results) {
         if(err) throw err;
         else {
-          res.json(result);
+          insertsForUpdate = [results[0].username];
+          if(name != results[0].name) {
+            sqlForUpdate += ', name = ?';
+            insertsForUpdate.push(name);
+          }
+          if(email != results[0].email) {
+            sqlForUpdate += ', email = ?';
+            insertsForUpdate.push(email);
+          }
+          if(salary != results[0].salary) {
+            sqlForUpdate += ', salary = ?';
+            insertsForUpdate.push(salary);
+          }
+          if(gender != results[0].gender) {
+            sqlForUpdate += ', gender = ?';
+            insertsForUpdate.push(gender);
+          }
+          if(dob != results[0].dob) {
+            sqlForUpdate += ', dob = ?';
+            insertsForUpdate.push(dob);
+          }
+          if(isMarried != results[0].isMarried) {
+            sqlForUpdate += ', isMarried = ?';
+            insertsForUpdate.push(isMarried);
+          }
+          if(password != results[0].password) {
+            sqlForUpdate += ', password = ?';
+            insertsForUpdate.push(password);
+          }
+          if(dpURL != results[0].dpURL) {
+            sqlForUpdate += ', dpURL = ?';
+            insertsForUpdate.push(dpURL);
+          }
+          sqlForUpdate += ' WHERE userId = ?';
+          insertsForUpdate.push(userId);
+
+          sqlForUpdate = mysql.format(sqlForUpdate, insertsForUpdate);
+          poolOfConnection.getConnection(function(error, connection) {
+            if(error) throw error;
+            else {
+              connection.query(sqlForUpdate, function(err, result) {
+                connection.release();
+                if(err) throw err;
+                else {
+                  res.json(result);
+                }
+              })
+            }
+          })
         }
       })
     }
