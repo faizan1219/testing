@@ -94,7 +94,8 @@ router.put('/', function(req, res) {
       connection.query(sqlForCurrent, function(err, results) {
         if(err) throw err;
         else {
-          insertsForUpdate = [results[0].username];
+          insertsForUpdate = [];
+          insertsForUpdate[0] = [results[0].username];
           if(username != results[0].name) {
             sqlForUpdate += ', name = ?';
             insertsForUpdate[0] = username;
