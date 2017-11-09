@@ -3,6 +3,26 @@ var mysql = require('mysql');
 var router = express.Router();
 var poolOfConnection = require('./dbConnection');
 
+router.get('/:userId', function(req, res) {
+  var userId = req.params.userId; 
+  var sql = 'Select * From endpointUser WHERE userId = ?';
+  var inserts = [userId] ;
+  sql = mysql.format(sql, inserts);
+  poolOfConnection.getConnection(function(error, connection) {
+    if (error) throw error;
+    else {
+      connection.query(sql, function(err, results) {
+        connection.release();
+        if(err) throw err;
+        else {
+          res.json(results);
+        }
+      })
+    }
+    
+  })
+})
+
 /* GET users listing. */
 router.get('/', function(req, res) {
   var sql = 'Select * From endpointUser';
@@ -96,7 +116,5 @@ router.delete('/:userId', function(req, res) {
     
   })
 })
-
-
 
 module.exports = router;
