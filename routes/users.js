@@ -95,11 +95,9 @@ router.put('/', function(req, res) {
         if(err) throw err;
         else {
           insertsForUpdate = [];
-          insertsForUpdate[0] = [results[0].username];
-          if(username != results[0].name) {
-            sqlForUpdate += ', name = ?';
-            insertsForUpdate[0] = username;
-          }
+          if(username != results[0].username) insertsForUpdate[0] = username;
+          else insertsForUpdate[0] = [results[0].username];
+          
           if(name != results[0].name) {
             sqlForUpdate += ', name = ?';
             insertsForUpdate.push(name);
@@ -134,8 +132,10 @@ router.put('/', function(req, res) {
           }
           sqlForUpdate += ' WHERE userId = ?';
           insertsForUpdate.push(userId);
+          console.log(insertsForUpdate);
 
           sqlForUpdate = mysql.format(sqlForUpdate, insertsForUpdate);
+          console.log(sqlForUpdate);
           poolOfConnection.getConnection(function(error, connection) {
             if(error) throw error;
             else {
