@@ -42,16 +42,18 @@ router.get('/', function(req, res) {
 
 router.post('/', function(req, res) {
   console.log(req.body);
-  var username = req.body.username;
-  var name = req.body.name;
-  var email = req.body.email;
-  var salary = req.body.salary;
-  var gender = req.body.gender;
-  var dob = req.body.dob;
-  var isMarried = req.body.isMarried;
+  var username = req.body.username || '';
+  var name = req.body.name || '';
+  var email = req.body.email || '';
+  var password = req.body.passwrod || '';
+  var dpURL = req.body.dpURL || '';
+  var salary = req.body.salary || null;
+  var gender = req.body.gender || '';
+  var dob = req.body.dob || '';
+  var isMarried = req.body.isMarried || false;
 
-  var inserts = [username, name, email, dob, gender, salary, isMarried];
-  var sql = 'INSERT INTO endpointUser(username, name, email, dob, gender, salary, isMarried) VALUES (?, ?, ?, ?, ?, ?, ?)';
+  var inserts = [username, name, email, dob, gender, salary, isMarried, password, dpURL];
+  var sql = 'INSERT INTO endpointUser(username, name, email, dob, gender, salary, isMarried, password, dpURL) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
   sql = mysql.format(sql, inserts);
 
   poolOfConnection.getConnection(function(error, connection) {
