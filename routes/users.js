@@ -9,11 +9,11 @@ router.get('/:userId', function(req, res) {
   var inserts = [userId] ;
   sql = mysql.format(sql, inserts);
   poolOfConnection.getConnection(function(error, connection) {
-    if (error) throw error;
+    if (error) res.json(error);
     else {
       connection.query(sql, function(err, results) {
         connection.release();
-        if(err) throw err;
+        if(err) res.json(err);
         else {
           res.json(results);
         }
@@ -28,10 +28,10 @@ router.get('/', function(req, res) {
   var sql = 'Select * From endpointUser';
   poolOfConnection.getConnection(function(error, connection) {
     connection.release();
-    if(error) throw error;
+    if(error) res.json(error);
     else {
       connection.query(sql, function(err, result) {
-        if(err) throw err;
+        if(err) res.json(err);
         else {
           res.json(result);
         }
@@ -57,11 +57,11 @@ router.post('/', function(req, res) {
   sql = mysql.format(sql, inserts);
 
   poolOfConnection.getConnection(function(error, connection) {
-    if(error) throw error;
+    if(error) res.json(error);
     else {
       connection.query(sql, function(err, result) {
         connection.release();
-        if(err) throw err;
+        if(err) res.json(err);
         else {
           res.json(result);
         }
@@ -71,91 +71,95 @@ router.post('/', function(req, res) {
 });
 
 router.put('/', function(req, res) {
-  console.log(req.body);
-  
+
   var insertsForUpdate;
   var userId      = req.body.userId;
-  var username    = req.body.username;
-  var name        = req.body.name;
-  var email       = req.body.email;
-  var salary      = req.body.salary;
-  var gender      = req.body.gender;
-  var dob         = req.body.dob;
-  var isMarried   = req.body.isMarried;
-  var password    = req.body.passwrod;
-  var dpURL       = req.body.dpURL;
-
-
-  var sqlForUpdate     = 'UPDATE endpointUser SET username = ?';
-  var sqlForCurrent    = 'Select * From endpointUser WHERE userId = ?';
-  var insertForCurrent = [userId] ;
-  sqlForCurrent        = mysql.format(sqlForCurrent, insertForCurrent);
-
-  poolOfConnection.getConnection(function(error, connection) {
-    if (error) throw error;
-    else {
-      connection.query(sqlForCurrent, function(err, results) {
-        if(err) throw err;
-        else if (results.length > 0) {
-          console.log('In here: ',results);
-          insertsForUpdate = [];
-          if(username != results[0].username) insertsForUpdate[0] = username;
-          else insertsForUpdate[0] = [results[0].username];
-
-          if(name != results[0].name) {
-            sqlForUpdate += ', name = ?';
-            insertsForUpdate.push(name);
-          }
-          if(email != results[0].email) {
-            sqlForUpdate += ', email = ?';
-            insertsForUpdate.push(email);
-          }
-          if(salary != results[0].salary) {
-            sqlForUpdate += ', salary = ?';
-            insertsForUpdate.push(salary);
-          }
-          if(gender != results[0].gender) {
-            sqlForUpdate += ', gender = ?';
-            insertsForUpdate.push(gender);
-          }
-          if(dob != results[0].dob) {
-            sqlForUpdate += ', dob = ?';
-            insertsForUpdate.push(dob);
-          }
-          if(isMarried != results[0].isMarried) {
-            sqlForUpdate += ', isMarried = ?';
-            insertsForUpdate.push(isMarried);
-          }
-          if(password != results[0].password) {
-            sqlForUpdate += ', password = ?';
-            insertsForUpdate.push(password);
-          }
-          if(dpURL != results[0].dpURL) {
-            sqlForUpdate += ', dpURL = ?';
-            insertsForUpdate.push(dpURL);
-          }
-          sqlForUpdate += ' WHERE userId = ?';
-          insertsForUpdate.push(userId);
-
-          sqlForUpdate = mysql.format(sqlForUpdate, insertsForUpdate);
-          poolOfConnection.getConnection(function(error, connection) {
-            if(error) throw error;
-            else {
-              connection.query(sqlForUpdate, function(err, result) {
-                connection.release();
-                if(err) throw err;
-                else {
-                  res.json(result);
-                }
-              })
+  if(userId) {
+    var username    = req.body.username;
+    var name        = req.body.name;
+    var email       = req.body.email;
+    var salary      = req.body.salary;
+    var gender      = req.body.gender;
+    var dob         = req.body.dob;
+    var isMarried   = req.body.isMarried;
+    var password    = req.body.passwrod;
+    var dpURL       = req.body.dpURL;
+  
+  
+    var sqlForUpdate     = 'UPDATE endpointUser SET username = ?';
+    var sqlForCurrent    = 'Select * From endpointUser WHERE userId = ?';
+    var insertForCurrent = [userId] ;
+    sqlForCurrent        = mysql.format(sqlForCurrent, insertForCurrent);
+  
+    poolOfConnection.getConnection(function(error, connection) {
+      if (error) res.json(error);
+      else {
+        connection.query(sqlForCurrent, function(err, results) {
+          if(err) res.json(err);
+          else if (results.length > 0) {
+            console.log('In here: ',results);
+            insertsForUpdate = [];
+            if(username != results[0].username) insertsForUpdate[0] = username;
+            else insertsForUpdate[0] = [results[0].username];
+  
+            if(name != results[0].name) {
+              sqlForUpdate += ', name = ?';
+              insertsForUpdate.push(name);
             }
-          })
-        } else {
-          res.json({message: 'No such record in DB'});
-        }
-      })
-    }
-  })
+            if(email != results[0].email) {
+              sqlForUpdate += ', email = ?';
+              insertsForUpdate.push(email);
+            }
+            if(salary != results[0].salary) {
+              sqlForUpdate += ', salary = ?';
+              insertsForUpdate.push(salary);
+            }
+            if(gender != results[0].gender) {
+              sqlForUpdate += ', gender = ?';
+              insertsForUpdate.push(gender);
+            }
+            if(dob != results[0].dob) {
+              sqlForUpdate += ', dob = ?';
+              insertsForUpdate.push(dob);
+            }
+            if(isMarried != results[0].isMarried) {
+              sqlForUpdate += ', isMarried = ?';
+              insertsForUpdate.push(isMarried);
+            }
+            if(password != results[0].password) {
+              sqlForUpdate += ', password = ?';
+              insertsForUpdate.push(password);
+            }
+            if(dpURL != results[0].dpURL) {
+              sqlForUpdate += ', dpURL = ?';
+              insertsForUpdate.push(dpURL);
+            }
+            sqlForUpdate += ' WHERE userId = ?';
+            insertsForUpdate.push(userId);
+  
+            sqlForUpdate = mysql.format(sqlForUpdate, insertsForUpdate);
+            poolOfConnection.getConnection(function(error2, connection) {
+              if(error2) res.json(error2);
+              else {
+                connection.query(sqlForUpdate, function(err2, result) {
+                  connection.release();
+                  if(err2) res.json(err2);
+                  else {
+                    res.json(result);
+                  }
+                })
+              }
+            })
+          } else {
+            res.json({errorMessage: 'No such record in DB'});
+          }
+        })
+      }
+    })
+  } else {
+    res.json({errorMessage: 'User Id not found!'});
+  }
+  
 });
 
 router.delete('/:userId', function(req, res) {
@@ -165,11 +169,11 @@ router.delete('/:userId', function(req, res) {
   var inserts = [userId] ;
   sql = mysql.format(sql, inserts);
   poolOfConnection.getConnection(function(error, connection) {
-    if (error) throw error;
+    if (error) res.json(error);
     else {
       connection.query(sql, function(err, results) {
         connection.release();
-        if(err) throw err;
+        if(err) res.json(err);
         else {
           res.json(results);
         }
