@@ -71,6 +71,8 @@ router.post('/', function(req, res) {
 });
 
 router.put('/', function(req, res) {
+  console.log(req.body);
+  
   var insertsForUpdate;
   var userId      = req.body.userId;
   var username    = req.body.username;
@@ -83,6 +85,7 @@ router.put('/', function(req, res) {
   var password    = req.body.passwrod;
   var dpURL       = req.body.dpURL;
 
+
   var sqlForUpdate     = 'UPDATE endpointUser SET username = ?';
   var sqlForCurrent    = 'Select * From endpointUser WHERE userId = ?';
   var insertForCurrent = [userId] ;
@@ -93,7 +96,8 @@ router.put('/', function(req, res) {
     else {
       connection.query(sqlForCurrent, function(err, results) {
         if(err) throw err;
-        else {
+        else if (results.length > 0) {
+          console.log('In here: ',results);
           insertsForUpdate = [];
           if(username != results[0].username) insertsForUpdate[0] = username;
           else insertsForUpdate[0] = [results[0].username];
@@ -146,6 +150,8 @@ router.put('/', function(req, res) {
               })
             }
           })
+        } else {
+          res.json({message: 'No such record in DB'});
         }
       })
     }
