@@ -27,10 +27,10 @@ router.get('/:userId', function(req, res) {
 router.get('/', function(req, res) {
   var sql = 'Select * From endpointUser';
   poolOfConnection.getConnection(function(error, connection) {
-    connection.release();
     if(error) res.json(error);
     else {
       connection.query(sql, function(err, result) {
+        connection.release();
         if(err) res.json(err);
         else {
           res.json(result);
@@ -45,7 +45,7 @@ router.post('/', function(req, res) {
   var username = req.body.username || '';
   var name = req.body.name || '';
   var email = req.body.email || '';
-  var password = req.body.passwrod || '';
+  var password = req.body.password || '';
   var dpURL = req.body.dpURL || '';
   var salary = req.body.salary || null;
   var gender = req.body.gender || '';
@@ -55,7 +55,7 @@ router.post('/', function(req, res) {
   var inserts = [username, name, email, dob, gender, salary, isMarried, password, dpURL];
   var sql = 'INSERT INTO endpointUser(username, name, email, dob, gender, salary, isMarried, password, dpURL) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
   sql = mysql.format(sql, inserts);
-
+  console.log(sql);
   poolOfConnection.getConnection(function(error, connection) {
     if(error) res.json(error);
     else {
@@ -82,7 +82,7 @@ router.put('/', function(req, res) {
     var gender      = req.body.gender;
     var dob         = req.body.dob;
     var isMarried   = req.body.isMarried;
-    var password    = req.body.passwrod;
+    var password    = req.body.password;
     var dpURL       = req.body.dpURL;
   
   
@@ -97,7 +97,7 @@ router.put('/', function(req, res) {
         connection.query(sqlForCurrent, function(err, results) {
           if(err) res.json(err);
           else if (results.length > 0) {
-            console.log('In here: ',results);
+            // console.log('old password: ', results[0].password, ' new pass: ',password, 'there comparison to be equal: ',(results[0].password == password));
             insertsForUpdate = [];
             if(username != results[0].username) insertsForUpdate[0] = username;
             else insertsForUpdate[0] = [results[0].username];
@@ -138,18 +138,16 @@ router.put('/', function(req, res) {
             insertsForUpdate.push(userId);
   
             sqlForUpdate = mysql.format(sqlForUpdate, insertsForUpdate);
-            poolOfConnection.getConnection(function(error2, connection) {
-              if(error2) res.json(error2);
+            // console.log(sqlForUpdate);
+        
+            connection.query(sqlForUpdate, function(err2, result) {
+              connection.release();
+              if(err2) res.json(err2);
               else {
-                connection.query(sqlForUpdate, function(err2, result) {
-                  connection.release();
-                  if(err2) res.json(err2);
-                  else {
-                    res.json(result);
-                  }
-                })
+                res.json(result);
               }
             })
+           
           } else {
             res.json({errorMessage: 'No such record in DB'});
           }
