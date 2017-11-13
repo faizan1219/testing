@@ -5,7 +5,7 @@ var poolOfConnection = require('./dbConnection');
 
 router.get('/:userId', function(req, res) {
   var userId = req.params.userId; 
-  var sql = 'Select username, name, email, password, gender, isMarried, salary From endpointUser WHERE userId = ?';
+  var sql = 'Select username, name, email, password, gender, isMarried, salary, dob From endpointUser WHERE userId = ?';
   var inserts = [userId] ;
   sql = mysql.format(sql, inserts);
   poolOfConnection.getConnection(function(error, connection) {
