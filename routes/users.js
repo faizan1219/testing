@@ -1,7 +1,19 @@
 var express = require('express');
 var mysql = require('mysql');
-var router = express.Router();
+var multer = require('multer');
+var cloudinary = require('cloudinary');
+
 var poolOfConnection = require('./dbConnection');
+
+var router = express.Router();
+
+cloudinary.config({ 
+  cloud_name: 'dgwrzv5ah', 
+  api_key: '295718447284411', 
+  api_secret: 'nMHMFC5LMWWhsLQkhfx8INi3tmU' 
+});
+
+
 
 router.get('/:userId', function(req, res) {
   var userId = req.params.userId; 
@@ -39,6 +51,43 @@ router.get('/', function(req, res) {
     }
   })
 });
+
+var upload = multer({ dest: 'uploads/' });
+
+router.post('/dp', upload.single('dp'), function(req, res) {
+  
+  var userId = req.body.userId;
+  if(userId) {
+    var sql = 'UPDATE endpointUser SET dpURL = ? WHERE userId = ?';
+    var inserts;
+    var url = req.file.destination+req.file.filename;
+
+    cloudinary.v2.uploader.upload(url, function(upError, result) { 
+      if(upError) res.json(upError);
+      else {
+        // console.log(result);
+        var dpURL = result.url;
+        inserts = [dpURL, userId];
+        sql = mysql.format(sql, inserts);
+        console.log(sql);
+        poolOfConnection.getConnection(function(error, connection) {
+          if(error) res.json(error);
+          else {
+            connection.query(sql, function(err, results) {
+              if(err) res.json(err);
+              else {
+                res.json(results);
+              }
+            })
+          }
+        })
+      }
+    });
+  } else {
+    res.json({erroeMessage: 'User Id not found?'});
+  }
+  
+})
 
 router.post('/', function(req, res) {
   console.log(req.body);
@@ -180,5 +229,7 @@ router.delete('/:userId', function(req, res) {
     
   })
 })
+
+
 
 module.exports = router;
